@@ -1,0 +1,3 @@
+== StackingContentProvider
+
+Allows you to stack multiple content providers, eg., local SQLite and back-end REST.
