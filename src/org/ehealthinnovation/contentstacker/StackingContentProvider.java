@@ -27,6 +27,15 @@ public class StackingContentProvider extends ContentProvider {
 
 	List<ContentProvider> providers = new ArrayList<ContentProvider>();
 	
+	/**
+	 * The only constructor; we can't have a constructor that takes
+	 * a ContentProvider... argument because Android wants to instantiate
+	 * the CP itself.
+	 */
+	public StackingContentProvider() {
+		// empty
+	}
+	
 	// List methods
 	
 	/** Adds a Content Provider to the list, maintaining the general contract for List.add().
