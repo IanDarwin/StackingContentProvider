@@ -16,7 +16,7 @@ import android.os.Build;
  * cloud or server-based database. 
  * 
  * The CP model doesn't "scale" well to stackability, but we do the best we can; please read the
- * comments on each method for how things play out in thr multi-provider arena.
+ * comments on each method for how things play out in the multi-provider arena.
  * 
  * In general, <b>order matters</b> in the following senses:
  * <li>The URI returned by the first CP's insert() method becomes my return value;</li>
@@ -46,7 +46,7 @@ public class StackingContentProvider extends ContentProvider {
 		return providers.add(cp);
 	}
 	
-	/** Adds a Content Provider to the list, maintaining the general contract for List.insert().
+	/** Adds a Content Provider to the list, maintaining the general contract for List.set().
 	 * @param cp
 	 * @return
 	 */
@@ -66,7 +66,7 @@ public class StackingContentProvider extends ContentProvider {
 	
 	@Override
 	public boolean onCreate() {
-		// I don't believe we need to do anything here.
+		// XXX Set up the mapping structure
 		return true;
 	}
 
@@ -75,6 +75,7 @@ public class StackingContentProvider extends ContentProvider {
 	/** Get the type from the FIRST provider. */
 	@Override
 	public String getType(Uri uri) {
+		requireAtLeastOneProvider();
 		return providers.get(0).getType(uri);
 	}
 	
@@ -101,8 +102,9 @@ public class StackingContentProvider extends ContentProvider {
 		Cursor ret = null;
 		for (ContentProvider cp : providers) {
 			final Cursor results = cp.query(uri, projection, selection, selectionArgs, sortOrder);
-			if (ret != null)
+			if (ret != null) {
 				ret = results;
+			}
 		};
 		return ret;
 	}

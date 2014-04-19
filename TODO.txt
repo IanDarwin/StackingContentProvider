@@ -1,0 +1,8 @@
+Provide own authority and URL handling!
+
+Provide local database mapping local _id to remote _id
+for each remote.
+
+query(): when retrieving from a remote, insert it locally.
+
+Maybe: limit to one local and one remote?
