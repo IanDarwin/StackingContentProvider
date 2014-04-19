@@ -26,6 +26,8 @@ import android.os.Build;
 @TargetApi(Build.VERSION_CODES.HONEYCOMB)
 public class StackingContentProvider extends ContentProvider {
 
+	public static final String CONTENT_PROVIDER_AUTHORITY = "CONTENT_PROVIDER_AUTHORITY";
+
 	public static final String AUTHORITY =
 			"com.darwinsys.contentstacker";
 	
@@ -70,7 +72,7 @@ public class StackingContentProvider extends ContentProvider {
 	// Helper methods
 	
 	/** Replace MY authority part of a URI with the designated CP's */
-	private Uri swapAuthority(Uri uri, String cp) {
+	static Uri swapAuthority(Uri uri, String cp) {
 		String ssp = uri.getPath().replaceFirst(".*/", cp + "/");
 		Uri ret = Uri.fromParts("content", ssp, null);
 		return ret;
@@ -109,7 +111,7 @@ public class StackingContentProvider extends ContentProvider {
 	@Override
 	public Uri insert(Uri uri, ContentValues values) {
 		if (isForMe(uri)) {
-			String auth = values.getAsString("CONTENT_PROVIDER_AUTHORITY");
+			String auth = values.getAsString(CONTENT_PROVIDER_AUTHORITY);
 			if (!addProvider(auth)) {
 				System.err.println("Already added " + auth);
 			}
