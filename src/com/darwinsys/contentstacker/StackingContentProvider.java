@@ -5,6 +5,7 @@ import java.util.List;
 
 import android.annotation.TargetApi;
 import android.content.ContentProvider;
+import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.net.Uri;
@@ -25,7 +26,11 @@ import android.os.Build;
 @TargetApi(Build.VERSION_CODES.HONEYCOMB)
 public class StackingContentProvider extends ContentProvider {
 
-	List<ContentProvider> providers = new ArrayList<ContentProvider>();
+	public static final String AUTHORITY =
+			"com.darwinsys.contentstacker";
+	
+	List<String> authorities = new ArrayList<String>();
+	ContentResolver resolver;
 	
 	/**
 	 * The only constructor; we can't have a constructor that takes
@@ -42,31 +47,51 @@ public class StackingContentProvider extends ContentProvider {
 	 * @param cp
 	 * @return
 	 */
-	public boolean addProvider(ContentProvider cp) {
-		return providers.add(cp);
+	public boolean addProvider(String cp) {
+		return authorities.add(cp);
 	}
 	
 	/** Adds a Content Provider to the list, maintaining the general contract for List.set().
 	 * @param cp
 	 * @return
 	 */
-	public ContentProvider addProvider(int location, ContentProvider cp) {
-		return providers.set(location, cp);
+	public String addProvider(int location, String cp) {
+		return authorities.set(location, cp);
 	}
 	
 	/** Removes a Content Provider from the list, maintaining the general contract for List.remove().
 	 * @param cp
 	 * @return
 	 */
-	public boolean removeProvider(ContentProvider cp) {
-		return providers.remove(cp);
+	public boolean removeProvider(String cp) {
+		return authorities.remove(cp);
+	}
+	
+	// Helper methods
+	
+	/** Replace MY authority part of a URI with the designated CP's */
+	private Uri swapAuthority(Uri uri, String cp) {
+		String ssp = uri.getPath().replaceFirst(".*/", cp + "/");
+		Uri ret = Uri.fromParts("content", ssp, null);
+		return ret;
+	}
+	
+	private void requireAtLeastOneProvider() {
+		if (authorities.isEmpty()) {
+			throw new IllegalStateException("Must have at least one stacked Content Provider before calling action methods");
+		}
+	}
+	
+	private boolean isForMe(Uri uri) {
+		return uri.getAuthority().equals(AUTHORITY);
 	}
 	
 	// Lifecycle Methods
 	
 	@Override
 	public boolean onCreate() {
-		// XXX Set up the mapping structure
+		// getContext is valid "after onCreate has been called", i.e., here
+		resolver = getContext().getContentResolver();
 		return true;
 	}
 
@@ -75,8 +100,7 @@ public class StackingContentProvider extends ContentProvider {
 	/** Get the type from the FIRST provider. */
 	@Override
 	public String getType(Uri uri) {
-		requireAtLeastOneProvider();
-		return providers.get(0).getType(uri);
+		return getContext().getContentResolver().getType(uri);
 	}
 	
 	// CREATE
@@ -84,10 +108,18 @@ public class StackingContentProvider extends ContentProvider {
 	/** Insert the values at the URI in EACH Content Provider; returns the URI for the FIRST one. */
 	@Override
 	public Uri insert(Uri uri, ContentValues values) {
+		if (isForMe(uri)) {
+			String auth = values.getAsString("CONTENT_PROVIDER_AUTHORITY");
+			if (!addProvider(auth)) {
+				System.err.println("Already added " + auth);
+			}
+			return null;
+		}
 		requireAtLeastOneProvider();
 		Uri ret = null;
-		for (ContentProvider cp : providers) {
-			final Uri inserted = cp.insert(uri, values);
+		for (String cp : authorities) {
+			final Uri insertUri = swapAuthority(uri, cp);
+			final Uri inserted = resolver.insert(insertUri, values);
 			if (ret != null)
 				ret = inserted;
 		};
@@ -100,8 +132,9 @@ public class StackingContentProvider extends ContentProvider {
 	public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
 		requireAtLeastOneProvider();
 		Cursor ret = null;
-		for (ContentProvider cp : providers) {
-			final Cursor results = cp.query(uri, projection, selection, selectionArgs, sortOrder);
+		for (String cp : authorities) {
+			final Cursor results = 
+					resolver.query(swapAuthority(uri, cp), projection, selection, selectionArgs, sortOrder);
 			if (ret != null) {
 				ret = results;
 			}
@@ -115,8 +148,8 @@ public class StackingContentProvider extends ContentProvider {
 	public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
 		requireAtLeastOneProvider();
 		int ret = -1;
-		for (ContentProvider cp : providers) {
-			final int results = cp.update(uri, values, selection, selectionArgs);
+		for (String cp : authorities) {
+			final int results = resolver.update(swapAuthority(uri, cp), values, selection, selectionArgs);
 			if (ret != -1)
 				ret = results;
 		};
@@ -129,19 +162,12 @@ public class StackingContentProvider extends ContentProvider {
 	public int delete(Uri uri, String selection, String[] selectionArgs) {
 		requireAtLeastOneProvider();
 		int ret = -1;
-		for (ContentProvider cp : providers) {
-			final int results = cp.delete(uri, selection, selectionArgs);
+		for (String cp : authorities) {
+			final int results = resolver.delete(swapAuthority(uri, cp), selection, selectionArgs);
 			if (ret != -1)
 				ret = results;
 		};
 		return ret;
 	}
-	
-	// Helperz
-	
-	private void requireAtLeastOneProvider() {
-		if (providers.isEmpty()) {
-			throw new IllegalStateException("Must have at least one stacked Content Provider before calling action methods");
-		}
-	}
+
 }
