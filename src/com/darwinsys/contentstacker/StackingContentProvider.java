@@ -1,4 +1,4 @@
-package org.ehealthinnovation.contentstacker;
+package com.darwinsys.contentstacker;
 
 import java.util.ArrayList;
 import java.util.List;
