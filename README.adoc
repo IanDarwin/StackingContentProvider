@@ -2,6 +2,10 @@
 
 Allows you to stack multiple content providers, eg., local SQLite and back-end REST.
 
+This is the demonstration project for
+http://tsn2.bzmedia.com/tradeshows/classinfo.aspx?id=19447&showid=34[my talk on Content Providers]
+at http://AnDevCon.com[AnDevCon 2014].
+
 === HowTo
 
 Since the Android (AOSP and Google) refuse to support Maven,
@@ -17,4 +21,4 @@ git clone https://github.com/mosabua/maven-android-sdk-deployer.git
 Assuming you have Android 4.3 and the Google APIs for it;
 if not, get that Android SDK Manager (Download) window running!
 
-Then you should be able to build and test this project with Maven!
+Then you should be able to build and test this project with Maven.
