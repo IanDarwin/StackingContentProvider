@@ -30,6 +30,8 @@ public class StackingContentProvider extends ContentProvider {
 
 	public static final String AUTHORITY =
 			"com.darwinsys.contentstacker";
+	public static final Uri CONTENT_URI =
+			Uri.parse("content://" + AUTHORITY + "/");
 	
 	List<String> authorities = new ArrayList<String>();
 	ContentResolver resolver;
@@ -73,18 +75,18 @@ public class StackingContentProvider extends ContentProvider {
 	
 	/** Replace MY authority part of a URI with the designated CP's */
 	static Uri swapAuthority(Uri uri, String cp) {
-		String ssp = uri.getPath().replaceFirst(".*/", cp + "/");
-		Uri ret = Uri.fromParts("content", ssp, null);
+		String ssp = uri.getPath().replaceFirst("[^.]*/", cp);
+		Uri ret = Uri.fromParts("content://", ssp, null);
 		return ret;
 	}
 	
-	private void requireAtLeastOneProvider() {
+	protected void requireAtLeastOneProvider() {
 		if (authorities.isEmpty()) {
 			throw new IllegalStateException("Must have at least one stacked Content Provider before calling action methods");
 		}
 	}
 	
-	private boolean isForMe(Uri uri) {
+	protected static boolean isForMe(Uri uri) {
 		return uri.getAuthority().equals(AUTHORITY);
 	}
 	
