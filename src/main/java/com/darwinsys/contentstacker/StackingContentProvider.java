@@ -6,6 +6,7 @@ import java.util.List;
 import android.annotation.TargetApi;
 import android.content.ContentProvider;
 import android.content.ContentResolver;
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.net.Uri;
@@ -35,15 +36,6 @@ public class StackingContentProvider extends ContentProvider {
 	
 	List<String> authorities = new ArrayList<String>();
 	ContentResolver resolver;
-	
-	/**
-	 * The only constructor; we can't have a constructor that takes
-	 * a ContentProvider... argument because Android wants to instantiate
-	 * the CP itself.
-	 */
-	public StackingContentProvider() {
-		// empty
-	}
 	
 	// List methods
 	
@@ -112,12 +104,18 @@ public class StackingContentProvider extends ContentProvider {
 	/** Insert the values at the URI in EACH Content Provider; returns the URI for the FIRST one. */
 	@Override
 	public Uri insert(Uri uri, ContentValues values) {
+		/**
+		 * If the authority is for us, add it to our list.
+		 * we can't have a constructor that takes
+		 * a ContentProvider... argument because Android wants to instantiate
+		 * the CP itself.
+		 */
 		if (isForMe(uri)) {
 			String auth = values.getAsString(CONTENT_PROVIDER_AUTHORITY);
 			if (!addProvider(auth)) {
 				System.err.println("Already added " + auth);
 			}
-			return null;
+			return ContentUris.withAppendedId(CONTENT_URI, authorities.lastIndexOf(auth));
 		}
 		requireAtLeastOneProvider();
 		Uri ret = null;
