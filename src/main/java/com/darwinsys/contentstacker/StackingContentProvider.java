@@ -21,7 +21,7 @@ import android.os.Build;
  * comments on each method for how things play out in the multi-provider arena.
  * 
  * In general, <b>order matters</b> in the following senses:
- * <li>The URI returned by the first CP's insert() method becomes my return value;</li>
+ * <li>The URI returned by the <b>first</b> CP's insert() method becomes my return value;</li>
  * @author Ian Darwin, darwinsys.com
  */
 @TargetApi(Build.VERSION_CODES.HONEYCOMB)
@@ -36,9 +36,9 @@ public class StackingContentProvider extends ContentProvider {
 	
 	List<String> authorities = new ArrayList<String>();
 	ContentResolver resolver;
-	
+
 	// List methods
-	
+
 	/** Adds a Content Provider to the list, maintaining the general contract for List.add().
 	 * @param cp
 	 * @return
