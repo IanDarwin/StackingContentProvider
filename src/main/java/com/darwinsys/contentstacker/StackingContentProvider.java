@@ -3,7 +3,6 @@ package com.darwinsys.contentstacker;
 import java.util.ArrayList;
 import java.util.List;
 
-import android.annotation.TargetApi;
 import android.content.ContentProvider;
 import android.content.ContentResolver;
 import android.content.ContentUris;
@@ -24,7 +23,6 @@ import android.os.Build;
  * <li>The URI returned by the <b>first</b> CP's insert() method becomes my return value;</li>
  * @author Ian Darwin, darwinsys.com
  */
-@TargetApi(Build.VERSION_CODES.HONEYCOMB)
 public class StackingContentProvider extends ContentProvider {
 
 	public static final String CONTENT_PROVIDER_AUTHORITY_KEY = "CONTENT_PROVIDER_AUTHORITY_KEY";
@@ -113,10 +111,12 @@ public class StackingContentProvider extends ContentProvider {
 		 */
 		if (isForMe(uri)) {
 			String auth = values.getAsString(CONTENT_PROVIDER_AUTHORITY_KEY);
-			if (!addProvider(auth)) {
-				System.err.println("Already added " + auth);
+			if (auth != null) {
+				if (!addProvider(auth)) {
+					System.err.println("Already added " + auth);
+				}
+				return ContentUris.withAppendedId(CONTENT_URI, authorities.lastIndexOf(auth));
 			}
-			return ContentUris.withAppendedId(CONTENT_URI, authorities.lastIndexOf(auth));
 		}
 		requireAtLeastOneProvider();
 		Uri ret = null;
