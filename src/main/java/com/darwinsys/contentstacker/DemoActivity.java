@@ -3,6 +3,7 @@ package com.darwinsys.contentstacker;
 import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Browser;
@@ -12,7 +13,7 @@ public class DemoActivity extends Activity {
 	
 	private static final String TAG = DemoActivity.class.getSimpleName();
 	
-	String[] from = {
+	String[] columns = {
             Browser.BookmarkColumns.TITLE,
             Browser.BookmarkColumns.URL,
     };
@@ -42,6 +43,12 @@ public class DemoActivity extends Activity {
 		values.put(Browser.BookmarkColumns.URL, "http://darwinsys.com/");
 		final Uri insertedBookmark = cr.insert(StackingContentProvider.CONTENT_URI, values);
 		Log.d(TAG, "Bookmark URL is " + insertedBookmark);
+		
+		// Now we list the Bookmarks and see what's there
+		Cursor cur = cr.query(Browser.BOOKMARKS_URI, columns, null, null, null);
+		while (cur.moveToNext()) {
+			Log.d(TAG, "Read bookmark: " + cur.getString(0) + "->" + cur.getString(1));
+		}
 		
 	}
 }
