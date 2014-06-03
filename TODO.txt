@@ -1,8 +1,12 @@
-Provide own authority and URL handling!
+Todo list for Stacking Sync Provider - not yet working, alas.
 
-Provide local database mapping local _id to remote _id
-for each remote.
+Several tests fail. DemoActivity fails to insert records in Bookmarks.
 
-query(): when retrieving from a remote, insert it locally.
+If we had a notion of which CP's were "remote" handlers, 
+query() could, when retrieving from a remote, insert it locally.
 
 Maybe: limit to one local and one remote?
+
+To handle case where id fields are not in sync:
+Provide an sqlite database  mapping local _id to remote _id
+for each remote?
